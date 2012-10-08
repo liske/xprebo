@@ -2,8 +2,7 @@
     <VERSION>2.0</VERSION>
     <FN>Nagios Jabber Bot</FN>
     <N/>
-    <NICKNAME>najabo</NICKNAME>
-    <URL>http://example.com/nagios3/</URL>
+    <NICKNAME>xprebo</NICKNAME>
     <PHOTO>
         <TYPE>image/png</TYPE>
         <BINVAL>
@@ -47,6 +46,6 @@ TkNmCsjCfwHLOUHrwgAsjwAAAABJRU5ErkJggg==
         </BINVAL>
     </PHOTO>
     <DESC>
-	https://github.com/liske/najabo
+	https://github.com/liske/xprebo
     </DESC>
 </vCard>

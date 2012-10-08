@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 
-# najabo - Nagios Jabber Bot
+# xprebo - XMPP Presence Bot
 #
 # Authors:
 #   Thomas Liske <thomas@fiasko-nw.net>
 #
 # Copyright Holder:
-#   2011 (C) Thomas Liske <thomas@fiasko-nw.net>
+#   2011 - 2012 (C) Thomas Liske <thomas@fiasko-nw.net>
 #
 # License:
 #   This program is free software; you can redistribute it and/or modify
@@ -41,14 +41,14 @@ use Nagios::StatusLog;
 use strict;
 use warnings;
 
-$0 = 'najabod';
+$0 = 'xprebod';
 
 use constant {
-    NAJABOD_VERSION => '0.4',
+    XPREBOD_VERSION => '0.1',
 
     XML_IQ_VERSION =>
 "<query xmlns='jabber:iq:version'>
-    <name>najabod</name>
+    <name>xprebod</name>
     <version>%NAJVER%</version>
     <os>nagios %NAGVER%($Config{osname})</os>
 </query>",
@@ -92,7 +92,7 @@ sub mydie($) {
     exit 1;
 }
 
-our $opt_c = '/etc/najabo/najabo.conf';
+our $opt_c = '/etc/xprebo/xprebo.conf';
 our $opt_f;
 getopts('fc:');
 mydie("Could not read config file '$opt_c'.") unless(-r $opt_c);
@@ -101,9 +101,9 @@ $logger->info("config file: '$opt_c'");
 my %xmpp_conf;
 my %auth_conf;
 my %nagios_conf;
-my %najabo_conf;
-my %najabo_acls;
-my %najabo_cmds = (
+my %xprebo_conf;
+my %xprebo_acls;
+my %xprebo_cmds = (
     lh => {
 	role => 'user',
 	preq => [],
@@ -170,12 +170,12 @@ my %najabo_cmds = (
 eval `cat "$opt_c"`;
 
 # enable log to file
-if(exists($najabo_conf{'logfile'})) {
+if(exists($xprebo_conf{'logfile'})) {
     $logger->add(
 	Log::Dispatch::File->new(
 	    name => 'logfile',
 	    min_level => 'info',
-	    filename => $najabo_conf{'logfile'},
+	    filename => $xprebo_conf{'logfile'},
 	    close_after_write => '1',
 	    callbacks => $logffile,
 	)
@@ -187,14 +187,14 @@ else {
 	Log::Dispatch::Syslog->new(
 	    name => 'syslog',
 	    min_level => 'info',
-	    ident => 'najabod',
+	    ident => 'xprebod',
 	    logopt => 'pid',
 	    facility => 'daemon',
 	)
     );
 }
 
-$logger->info('najabod '.NAJABOD_VERSION);
+$logger->info('xprebod '.XPREBOD_VERSION);
 
 my $conn;
 my $last;
@@ -205,10 +205,10 @@ sub SendVCard(%) {
     my $iq = new Net::XMPP::IQ();
     $iq->SetIQ(@_);
 
-    if (exists($najabo_conf{'vcard'}) &&
-        defined($najabo_conf{'vcard'}) &&
-        (-r $najabo_conf{'vcard'}) &&
-        open(FILEREAD, '<', $najabo_conf{'vcard'})) {
+    if (exists($xprebo_conf{'vcard'}) &&
+        defined($xprebo_conf{'vcard'}) &&
+        (-r $xprebo_conf{'vcard'}) &&
+        open(FILEREAD, '<', $xprebo_conf{'vcard'})) {
 
         $iq->InsertRawXML(<FILEREAD>);
         close(FILEREAD);
@@ -238,7 +238,7 @@ unless($opt_f) {
 
     # check if we are alone
     eval {
-	die "Daemon is already running or PID file is stale!" if(Proc::PID::File->running(verify => 1, dir => $najabo_conf{'rundir'}));
+	die "Daemon is already running or PID file is stale!" if(Proc::PID::File->running(verify => 1, dir => $xprebo_conf{'rundir'}));
     };
     mydie "Failed to setup PID file: $@" if($@);
 
@@ -440,7 +440,7 @@ sub ParseStatus {
         $t =~ s/^(.{4}).+/$1/;
 
         push(@states, ($#{$states{$status}} + 1).' '.$t);
-        push(@details, $status) unless(scalar grep {/^$status$/i} @{$najabo_conf{'filter_states'}});
+        push(@details, $status) unless(scalar grep {/^$status$/i} @{$xprebo_conf{'filter_states'}});
     }
 
     $status = join(', ', @states);
@@ -510,16 +510,16 @@ sub SendHelp($@) {
     my $roles = shift;
 
     my $help;
-    foreach my $cmd (sort keys %najabo_cmds) {
-	next unless(scalar grep {$_ eq ${$najabo_cmds{$cmd}}{'role'}} @{$roles});
+    foreach my $cmd (sort keys %xprebo_cmds) {
+	next unless(scalar grep {$_ eq ${$xprebo_cmds{$cmd}}{'role'}} @{$roles});
 
-	$help .= "\n".${$najabo_cmds{$cmd}}{'descr'}.":\n\t$cmd";
+	$help .= "\n".${$xprebo_cmds{$cmd}}{'descr'}.":\n\t$cmd";
 
-	$help .= ' <'.join('> <', @{${$najabo_cmds{$cmd}}{'preq'}}).'>'
-	    unless($#{${$najabo_cmds{$cmd}}{'preq'}} == -1);
+	$help .= ' <'.join('> <', @{${$xprebo_cmds{$cmd}}{'preq'}}).'>'
+	    unless($#{${$xprebo_cmds{$cmd}}{'preq'}} == -1);
 
-	$help .= ' ['.join('] [', @{${$najabo_cmds{$cmd}}{'popt'}}).']'
-	    unless($#{${$najabo_cmds{$cmd}}{'popt'}} == -1);
+	$help .= ' ['.join('] [', @{${$xprebo_cmds{$cmd}}{'popt'}}).']'
+	    unless($#{${$xprebo_cmds{$cmd}}{'popt'}} == -1);
 
 	$help .= "\n";
     }
@@ -557,18 +557,18 @@ sub InMessage {
 
     my @roles = qw(any);
 
-    foreach my $role (keys %najabo_acls) {
-	push(@roles, $role) if($message->GetFrom() =~ /$najabo_acls{$role}/);
+    foreach my $role (keys %xprebo_acls) {
+	push(@roles, $role) if($message->GetFrom() =~ /$xprebo_acls{$role}/);
     }
 
     my $user = 'JID: '.$message->GetFrom().', roles: '.join(', ', @roles);
 
-    if(exists($najabo_cmds{$cmd})) {
-	if (scalar grep {$_ eq ${$najabo_cmds{$cmd}}{'role'}} @roles) {
-	    if(exists(${$najabo_cmds{$cmd}}{'run'})) {
+    if(exists($xprebo_cmds{$cmd})) {
+	if (scalar grep {$_ eq ${$xprebo_cmds{$cmd}}{'role'}} @roles) {
+	    if(exists(${$xprebo_cmds{$cmd}}{'run'})) {
 		my $body = '';
-		$body = `${$najabo_cmds{$cmd}}{'run'}`
-		    if (-x ${$najabo_cmds{$cmd}}{'run'});
+		$body = `${$xprebo_cmds{$cmd}}{'run'}`
+		    if (-x ${$xprebo_cmds{$cmd}}{'run'});
 		chomp($body);
 
 		if($body ne '') {
@@ -587,8 +587,8 @@ sub InMessage {
 		    ));
 		}
 	    }
-	    elsif(exists(${$najabo_cmds{$cmd}}{'sub'})) {
-		&{${$najabo_cmds{$cmd}}{'sub'}}($message, \@params, \@roles);
+	    elsif(exists(${$xprebo_cmds{$cmd}}{'sub'})) {
+		&{${$xprebo_cmds{$cmd}}{'sub'}}($message, \@params, \@roles);
 	    }
 	    else {
 		$logger->notice("command not implemented ($user): $cmd");
@@ -613,7 +613,7 @@ sub InMessage {
 	}
     }
     else {
-	if (exists($najabo_cmds{'help'}) && scalar grep {$_ eq ${$najabo_cmds{'help'}}{'role'}} @roles) {
+	if (exists($xprebo_cmds{'help'}) && scalar grep {$_ eq ${$xprebo_cmds{'help'}}{'role'}} @roles) {
 	    $logger->info("command unknown ($user): $cmd");
 
 	    $conn->Send($message->Reply(
@@ -654,7 +654,7 @@ sub InIQ {
 
             my $ver = XML_IQ_VERSION;
             my $i;
-            $ver =~ s/%NAJVER%/${\(NAJABOD_VERSION)}/;
+            $ver =~ s/%NAJVER%/${\(XPREBOD_VERSION)}/;
             if(defined($i = $log->info) && defined($i->version)) {
                 $ver =~ s/%NAGVER%/${$i}{version} /;
             }
