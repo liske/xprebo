@@ -35,6 +35,8 @@ use POSIX qw(strftime mkfifo);
 use Proc::Daemon;
 use Proc::PID::File;
 use Net::XMPP;
+use IO::Select;
+use IO::Handle;
 
 use strict;
 use warnings;
@@ -163,10 +165,23 @@ sub SendVCard(%) {
 
 # setup named pipes
 $logger->info("status named pipe : $xprebo_conf{status_pipe}");
-$logger->info("message named pipe: $xprebo_conf{message_pipe}");
+$logger->info("message named pipe: $xprebo_conf{show_pipe}");
 
-my $fifo_status = mkfifo($xprebo_conf{'status_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{status_pipe}: $!";
-my $fifo_message = mkfifo($xprebo_conf{'message_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{message_pipe}: $!";
+unless(-p $xprebo_conf{'status_pipe'}) {
+    unlink($xprebo_conf{'status_pipe'});
+    mkfifo($xprebo_conf{'status_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{status_pipe}: $!";
+}
+open(FIFO_STATUS, '<', $xprebo_conf{'status_pipe'}) || mydie "Failed to open fifo $xprebo_conf{status_pipe}: $!";
+
+unless(-p $xprebo_conf{'show_pipe'}) {
+    unlink($xprebo_conf{'show_pipe'});
+    mkfifo($xprebo_conf{'show_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{show_pipe}: $!";
+}
+open(FIFO_SHOW, '<', $xprebo_conf{'show_pipe'}) ||  mydie "Failed to open fifo $xprebo_conf{show_pipe}: $!";
+
+my $select = IO::Select->new();
+$select->add(\*FIFO_STATUS);
+$select->add(\*FIFO_SHOW);
 
 unless($opt_f) {
     # daemonize
@@ -218,7 +233,7 @@ while(1) {
 
     # wait for XMPP messages and nagios status updates
     while(defined($conn->Process(3))) {
-#	$inotify->poll;
+	my @ready = $select->can_read(0.1);
     }
 
     $presence_status = 'XMPP connection broken...';
