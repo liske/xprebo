@@ -1,49 +1,19 @@
-najabod
+xprebod
 =======
 
-najabod is a Nagios Jabber Bot. najabod connects to a XMPP server as a
-XMPP client. It reads the nagios status log and shows an overview of the
-current states of the monitored nodes. Further version will allow you
-to query detailed informations, acknowledge problems and schedule
-downtimes etc.
+ xprebo connects to an XMPP/Jabber server and shows a presence status.
+ The status and the message can be changed by feeding new events into
+ named pipes. This makes it usable by scripts.
 
-The current version has no ACL and did not support precense
-subscription, yet. You will need to do the presence subscription with
-your favorite XMPP client or use a XMPP server with shared roster
-support like ejabberd.
-
-
-Status flags
-============
-
-D	host/service is down
-C	host/service is critical
-W	host/service is warning
-F	host/service state is flapping
-
-
-Interactive commands
-====================
-
-User commands:
-
- lh [host]
-    list hosts
-
- hd <host>
-    host details
-
- ls [host] [service]
-    list services
-
- sd <host> <service>
-    service details
+The current version does not support precense subscription, yet. You
+will need to do the presence subscription with your favorite XMPP
+client or use a XMPP server with shared roster support like ejabberd.
 
 
 Implemented XEPs
 ================
 
-najabod has the following XEPs implemented:
+xprebod has the following XEPs implemented:
 
  XEP-0012: Last Activity
  XEP-0030: Service Discovery
@@ -68,7 +38,7 @@ To get SRV lookup work, you must have at least
     Net::XMPP >= 1.02_02
     XML::Stream >= 1.23_04
 
-installed and enable the following lines in your najabo.conf:
+installed and enable the following lines in your xprebo.conf:
 
     $xmpp_conf{'componentname'} = $xmpp_conf{'hostname'};
     $xmpp_conf{'srv'} = 1;
