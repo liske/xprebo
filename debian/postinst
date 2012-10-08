@@ -1,5 +1,5 @@
 #!/bin/sh
-# postinst script for najabo
+# postinst script for xprebo
 #
 # see: dh_installdeb(1)
 
@@ -20,13 +20,13 @@ set -e
 
 case "$1" in
     configure)
-      if ! getent passwd najabo > /dev/null ; then
-        echo 'Adding system-user for najabo' 1>&2
-        adduser --system --ingroup www-data --home /var/run/najabo \
-                --disabled-login --force-badname najabo > /dev/null
+      if ! getent passwd xprebo > /dev/null ; then
+        echo 'Adding system-user for xprebo' 1>&2
+        adduser --system --ingroup www-data --home /var/run/xprebo \
+                --disabled-login --force-badname xprebo > /dev/null
       fi
-      chown najabo:nagios /etc/najabo/*
-      chmod 0600 /etc/najabo/najabo.conf
+      chown xprebo /etc/xprebo/*
+      chmod 0600 /etc/xprebo/xprebo.conf
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

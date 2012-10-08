@@ -1,6 +1,6 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          najabod
+# Provides:          xprebod
 # Required-Start:    $network $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
@@ -14,13 +14,13 @@
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
-DESC="Nagios Jabber Bot" # Introduce a short description here
-NAME=najabod             # Introduce the short server's name here
-DAEMON=/usr/sbin/najabod # Introduce the server's location here
+DESC="XMPP Presence Bot" # Introduce a short description here
+NAME=xprebod             # Introduce the short server's name here
+DAEMON=/usr/sbin/xprebod # Introduce the server's location here
 DAEMON_ARGS=""           # Arguments to run the daemon with
-PIDFILE=/var/run/najabo/$NAME.pid
+PIDFILE=/var/run/xprebo/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-USERNAME=najabo
+USERNAME=xprebo
 
 # Exit if the package is not installed
 [ -x $DAEMON ] || exit 0

@@ -1,21 +1,17 @@
-Source: najabo
+Source: xprebo
 Section: net
 Priority: extra
 Maintainer: Thomas Liske <thomas@fiasko-nw.net>
 Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.8.4
-Homepage: https://github.com/liske/najabo
-Vcs-Git: git://github.com/liske/najabo.git
+Homepage: https://github.com/liske/xprebo
+Vcs-Git: git://github.com/liske/xprebo.git
 
-Package: najabo
+Package: xprebo
 Architecture: all
-Pre-Depends: nagios3 | nagios
-Depends: libnet-xmpp-perl (>> 1.02-1), liblinux-inotify2-perl, liblog-dispatch-perl, libproc-daemon-perl, libproc-pid-file-perl, libnagios-object-perl
+Depends: libnet-xmpp-perl (>> 1.02-1), liblog-dispatch-perl, libproc-daemon-perl, libproc-pid-file-perl
 Recommends: libnet-dns-perl
-Description: Nagios Jabber Bot
- najabo formats and exports the nagios status log as a XMPP client. It
- is possible to watch the most recent nagios status as XMPP presence
- data.
- .
- najabo should work with any nagios version, although it is only tested
- with nagios versions avaible in Debian (etch 'til squeeze).
+Description: XMPP Presence Bot
+ xprebo connects to an XMPP/Jabber server and shows a presence status.
+ The status and the message can be changed by feeding new events into
+ named pipes. This makes it usable by scripts.
