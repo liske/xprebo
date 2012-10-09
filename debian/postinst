@@ -20,12 +20,17 @@ set -e
 
 case "$1" in
     configure)
+      if ! getent group xprebo > /dev/null ; then
+        echo 'Adding system-group for xprebo' 1>&2
+        addgroup --system xprebo > /dev/null
+      fi
+
       if ! getent passwd xprebo > /dev/null ; then
         echo 'Adding system-user for xprebo' 1>&2
         adduser --system --ingroup www-data --home /var/run/xprebo \
                 --disabled-login --force-badname xprebo > /dev/null
       fi
-      chown xprebo /etc/xprebo/*
+      chown xprebo:xprebo /etc/xprebo/*
       chmod 0600 /etc/xprebo/xprebo.conf
     ;;
 
