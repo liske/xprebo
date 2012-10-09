@@ -1,3 +1,10 @@
+xprebo (0.2) unstable; urgency=low
+
+  * Improve daemonizing and terminating.
+  * Improve postinst hook.
+
+ -- Thomas Liske <liske@ibh.de>  Tue, 09 Oct 2012 22:47:37 +0200
+
 xprebo (0.1) unstable; urgency=low
 
   * Initial release, forked from najabo 0.4.
