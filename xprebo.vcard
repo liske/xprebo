@@ -1,6 +1,6 @@
 <vCard xmlns='vcard-temp'>
     <VERSION>2.0</VERSION>
-    <FN>Nagios Jabber Bot</FN>
+    <FN>XMPP Presence Bot</FN>
     <N/>
     <NICKNAME>xprebo</NICKNAME>
     <PHOTO>
