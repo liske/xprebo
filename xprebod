@@ -75,9 +75,23 @@ my $logffile = sub { my %p = @_;  return (scalar localtime())." [$$] $p{message}
 my $logger = Log::Dispatch->new(callbacks => $logfmt);
 
 my $daemonize;
+my @pipe_pids;
 END {
+    foreach my $pid (@pipe_pids) {
+	kill 'TERM', $pid;
+    }
     $logger->notice('terminated') if(defined($logger) && !defined($daemonize));
 }
+
+sub TERM_handler {
+    $logger->notice('got SIGTERM');
+    exit;
+}
+
+$SIG{INT} = 'INT_handler';
+$SIG{TERM} = 'TERM_handler';
+$SIG{PIPE} = 'IGNORE';
+$SIG{CHLD} = 'IGNORE';
 
 $logger->add(
     Log::Dispatch::Screen->new(
@@ -163,6 +177,11 @@ sub SendVCard(%) {
 }
 
 sub pipe_wrapper($) {
+    $0 .= "#FIFO";
+    close(STDIN);
+    $logger->remove('console') unless($opt_f);
+    @pipe_pids = ();
+
     my $pipe = shift;
 
     for(;;) {
@@ -185,29 +204,16 @@ sub pipe_wrapper($) {
 $logger->info("status named pipe : $xprebo_conf{status_pipe}");
 $logger->info("show named pipe: $xprebo_conf{show_pipe}");
 
-my $select = IO::Select->new();
-
 unless(-p $xprebo_conf{'status_pipe'}) {
     unlink($xprebo_conf{'status_pipe'});
     mkfifo($xprebo_conf{'status_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{status_pipe}: $!";
-}
-if(my $child_status = open(PSTATUS, '-|')) {
-    $select->add(\*PSTATUS);
-}
-else {
-    pipe_wrapper($xprebo_conf{'status_pipe'});
 }
  
 unless(-p $xprebo_conf{'show_pipe'}) {
     unlink($xprebo_conf{'show_pipe'});
     mkfifo($xprebo_conf{'show_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{show_pipe}: $!";
 }
-if(my $child_status = open(PSHOW, '-|')) {
-    $select->add(\*PSHOW);
-}
-else {
-    pipe_wrapper($xprebo_conf{'show_pipe'});
-}
+
 
 unless($opt_f) {
     # daemonize
@@ -225,6 +231,25 @@ unless($opt_f) {
     # detach log to console
     $logger->notice('Could not remove console dispatcher!') unless($logger->remove('console'));
 }
+
+
+my $select = IO::Select->new();
+if(my $pid = open(PSTATUS, '-|')) {
+    push(@pipe_pids, $pid);
+    $select->add(\*PSTATUS);
+}
+else {
+    pipe_wrapper($xprebo_conf{'status_pipe'});
+}
+
+if(my $pid = open(PSHOW, '-|')) {
+    push(@pipe_pids, $pid);
+    $select->add(\*PSHOW);
+}
+else {
+    pipe_wrapper($xprebo_conf{'show_pipe'});
+}
+
 
 my $presence_status = 'Initializing...';
 my $presence_show = 'dnd';
