@@ -162,26 +162,52 @@ sub SendVCard(%) {
     $conn->Send($iq);
 }
 
+sub pipe_wrapper($) {
+    my $pipe = shift;
+
+    for(;;) {
+	open(FIFO, '<', $pipe) || mydie "Failed to open fifo $pipe}: $!";
+	my $status = '';
+	while(my $line = <FIFO>) {
+	    $status .= $line;
+	}
+	close(FIFO);
+
+	chomp($status);
+	$status =~ s/\n/\a/g;
+
+	print STDOUT "$status\n";
+    }
+}
+
 
 # setup named pipes
 $logger->info("status named pipe : $xprebo_conf{status_pipe}");
-$logger->info("message named pipe: $xprebo_conf{show_pipe}");
+$logger->info("show named pipe: $xprebo_conf{show_pipe}");
+
+my $select = IO::Select->new();
 
 unless(-p $xprebo_conf{'status_pipe'}) {
     unlink($xprebo_conf{'status_pipe'});
     mkfifo($xprebo_conf{'status_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{status_pipe}: $!";
 }
-open(FIFO_STATUS, '<', $xprebo_conf{'status_pipe'}) || mydie "Failed to open fifo $xprebo_conf{status_pipe}: $!";
-
+if(my $child_status = open(PSTATUS, '-|')) {
+    $select->add(\*PSTATUS);
+}
+else {
+    pipe_wrapper($xprebo_conf{'status_pipe'});
+}
+ 
 unless(-p $xprebo_conf{'show_pipe'}) {
     unlink($xprebo_conf{'show_pipe'});
     mkfifo($xprebo_conf{'show_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{show_pipe}: $!";
 }
-open(FIFO_SHOW, '<', $xprebo_conf{'show_pipe'}) ||  mydie "Failed to open fifo $xprebo_conf{show_pipe}: $!";
-
-my $select = IO::Select->new();
-$select->add(\*FIFO_STATUS);
-$select->add(\*FIFO_SHOW);
+if(my $child_status = open(PSHOW, '-|')) {
+    $select->add(\*PSHOW);
+}
+else {
+    pipe_wrapper($xprebo_conf{'show_pipe'});
+}
 
 unless($opt_f) {
     # daemonize
@@ -234,10 +260,28 @@ while(1) {
     # wait for XMPP messages and nagios status updates
     while(defined($conn->Process(3))) {
 	my @ready = $select->can_read(0.1);
-    }
 
-    $presence_status = 'XMPP connection broken...';
-    $presence_show = 'dnd';
+	if($#ready > -1) {
+	    my ($status, $show) = ($presence_status, $presence_show);
+	    foreach my $fd (@ready) {
+		my $line = <$fd>;
+		chomp($line);
+		$line =~ s/\a/\n/g;
+		
+		if(fileno($fd) == fileno(PSTATUS)) {
+		    ($status, $presence_status) = ($presence_status, $line);
+		}
+		else {
+		    ($show, $presence_show) = ($presence_show, $line);
+		}
+	    }
+
+	    $conn->PresenceSend(
+		status => $presence_status,
+		show => $presence_show,
+		) if($status ne $presence_status || $show ne $presence_show);
+	}
+    }
 
     $logger->warning('XMPP connection broken, sleeping 30 seconds!');
     sleep(30);
