@@ -177,6 +177,7 @@ sub SendVCard(%) {
 }
 
 sub pipe_wrapper($) {
+    $|++;
     $0 .= "#FIFO";
     close(STDIN);
     $logger->remove('console') unless($opt_f);
