@@ -203,16 +203,17 @@ sub pipe_wrapper($) {
 # setup named pipes
 $logger->info("status named pipe : $xprebo_conf{status_pipe}");
 $logger->info("show named pipe: $xprebo_conf{show_pipe}");
-
+my $oumask = umask($xprebo_conf{'umask'});
 unless(-p $xprebo_conf{'status_pipe'}) {
     unlink($xprebo_conf{'status_pipe'});
-    mkfifo($xprebo_conf{'status_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{status_pipe}: $!";
+    mkfifo($xprebo_conf{'status_pipe'}, 0666) || mydie "Failed to setup fifo $xprebo_conf{status_pipe}: $!";
 }
  
 unless(-p $xprebo_conf{'show_pipe'}) {
     unlink($xprebo_conf{'show_pipe'});
-    mkfifo($xprebo_conf{'show_pipe'}, 0770) || mydie "Failed to setup fifo $xprebo_conf{show_pipe}: $!";
+    mkfifo($xprebo_conf{'show_pipe'}, 0666) || mydie "Failed to setup fifo $xprebo_conf{show_pipe}: $!";
 }
+umask($oumask);
 
 
 unless($opt_f) {
