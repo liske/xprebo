@@ -1,12 +1,20 @@
+xprebo (0.3) unstable; urgency=low
+
+  * Add umask configuration support (defaults to 0002).
+  * Create run directory by initscript.
+  * Fix pipe I/O buffering (enable autoflush).
+
+ -- Thomas Liske <thomas@fiasko-nw.net>  Sun, 24 Mar 2013 18:30:25 +0100
+
 xprebo (0.2) unstable; urgency=low
 
   * Improve daemonizing and terminating.
   * Improve postinst hook.
 
- -- Thomas Liske <liske@ibh.de>  Tue, 09 Oct 2012 22:47:37 +0200
+ -- Thomas Liske <thomas@fiasko-nw.net>  Tue, 09 Oct 2012 22:47:37 +0200
 
 xprebo (0.1) unstable; urgency=low
 
   * Initial release, forked from najabo 0.4.
 
- -- Thomas Liske <liske@ibh.de>  Tue, 09 Oct 2012 21:37:20 +0200
+ -- Thomas Liske <thomas@fiasko-nw.net>  Tue, 09 Oct 2012 21:37:20 +0200
