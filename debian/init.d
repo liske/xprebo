@@ -40,6 +40,12 @@ USERNAME=xprebo
 #
 do_start()
 {
+	RUNDIR=`dirname "$PIDFILE"`
+	if [ ! -e "$RUNDIR" ]; then
+	    mkdir -p "$RUNDIR"
+	    chown "$USERNAME:$USERNAME" "$RUNDIR"
+	fi
+
 	# Return
 	#   0 if daemon has been started
 	#   1 if daemon was already running
