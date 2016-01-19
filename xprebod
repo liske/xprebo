@@ -6,7 +6,7 @@
 #   Thomas Liske <thomas@fiasko-nw.net>
 #
 # Copyright Holder:
-#   2011 - 2012 (C) Thomas Liske <thomas@fiasko-nw.net>
+#   2011 - 2016 (C) Thomas Liske <thomas@fiasko-nw.net>
 #
 # License:
 #   This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ use warnings;
 $0 = 'xprebod';
 
 use constant {
-    XPREBOD_VERSION => '0.3',
+    XPREBOD_VERSION => '0.4',
 
     XML_IQ_VERSION =>
 "<query xmlns='jabber:iq:version'>
