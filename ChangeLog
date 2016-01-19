@@ -1,3 +1,9 @@
+xprebo (0.4) unstable; urgency=low
+
+  * Ignore empty messages (i.e. chatstate notifications).
+
+ -- Thomas Liske <thomas@fiasko-nw.net>  
+
 xprebo (0.3) unstable; urgency=low
 
   * Add umask configuration support (defaults to 0002).
