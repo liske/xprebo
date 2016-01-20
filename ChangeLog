@@ -1,6 +1,7 @@
 xprebo (0.4) unstable; urgency=low
 
   * Ignore empty messages (i.e. chatstate notifications).
+  * Allow parameters on external commands.
 
  -- Thomas Liske <thomas@fiasko-nw.net>  
 

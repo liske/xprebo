@@ -200,6 +200,24 @@ sub pipe_wrapper($) {
     }
 }
 
+sub fork_exec {
+    my $pid = open(HPIPE, '-|');
+    defined($pid) || return "ERROR: Can't fork: $!\n";
+
+    if($pid == 0) {
+	close(STDIN);
+	*STDERR = *STDOUT;
+
+	exec(@_) || print "ERROR: Can't exec: $!\n";
+	exit;
+    }
+
+    my $ret = join('', <HPIPE>);
+    close(HPIPE);
+
+    return $ret;
+}
+
 
 # setup named pipes
 $logger->info("status named pipe : $xprebo_conf{status_pipe}");
@@ -251,7 +269,6 @@ if(my $pid = open(PSHOW, '-|')) {
 else {
     pipe_wrapper($xprebo_conf{'show_pipe'});
 }
-
 
 my $presence_status = 'Initializing...';
 my $presence_show = 'dnd';
@@ -377,9 +394,7 @@ sub InMessage {
     if(exists($xprebo_cmds{$cmd})) {
 	if (scalar grep {$_ eq ${$xprebo_cmds{$cmd}}{'role'}} @roles) {
 	    if(exists(${$xprebo_cmds{$cmd}}{'run'})) {
-		my $body = '';
-		$body = `${$xprebo_cmds{$cmd}}{'run'}`
-		    if (-x ${$xprebo_cmds{$cmd}}{'run'});
+		my $body = fork_exec(${$xprebo_cmds{$cmd}}{'run'}, @params)
 		chomp($body);
 
 		if($body ne '') {
