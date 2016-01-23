@@ -394,7 +394,7 @@ sub InMessage {
     if(exists($xprebo_cmds{$cmd})) {
 	if (scalar grep {$_ eq ${$xprebo_cmds{$cmd}}{'role'}} @roles) {
 	    if(exists(${$xprebo_cmds{$cmd}}{'run'})) {
-		my $body = fork_exec(${$xprebo_cmds{$cmd}}{'run'}, @params)
+		my $body = fork_exec(${$xprebo_cmds{$cmd}}{'run'}, @params);
 		chomp($body);
 
 		if($body ne '') {
