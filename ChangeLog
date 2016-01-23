@@ -1,9 +1,13 @@
 xprebo (0.4) unstable; urgency=low
 
-  * Ignore empty messages (i.e. chatstate notifications).
-  * Allow parameters on external commands.
+  * Bugfixes:
+    + Fix cmd config examples.
+    + Pass command parameters to external commands.
+    + Fix nagios restart detection.
+    + Ignore empty messages (i.e. chatstate notifications).
+  * Improve reporting of configuration file syntax errors.
 
- -- Thomas Liske <thomas@fiasko-nw.net>  
+ -- Thomas Liske <thomas@fiasko-nw.net>  Sat, 23 Jan 2016 13:02:04 +0100
 
 xprebo (0.3) unstable; urgency=low
 
