@@ -124,7 +124,9 @@ my %xprebo_cmds = (
 	sub => \&SendHelp,
     },
 );
+
 eval `cat "$opt_c"`;
+mydie("$opt_c: $@") if($@);
 
 # enable log to file
 if(exists($xprebo_conf{'logfile'})) {
